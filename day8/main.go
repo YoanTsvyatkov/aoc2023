@@ -97,6 +97,27 @@ func solution1() {
 	fmt.Println(cnt)
 }
 
+// greatest common divisor (GCD) via Euclidean algorithm
+func GCD(a, b int) int {
+	for b != 0 {
+		t := b
+		b = a % b
+		a = t
+	}
+	return a
+}
+
+// find Least Common Multiple (LCM) via GCD
+func LCM(a, b int, integers ...int) int {
+	result := a * b / GCD(a, b)
+
+	for i := 0; i < len(integers); i++ {
+		result = LCM(result, integers[i])
+	}
+
+	return result
+}
+
 func solution2() {
 	nodesMap := make(map[string]*Node)
 	endingWithA := make([]*Node, 0)
@@ -134,8 +155,40 @@ func solution2() {
 		}
 	}
 
-	cnt := getMovesTillEndSlice(endingWithA, 0)
-	fmt.Println(cnt)
+	stepsTillEndingZ := make(map[string]int)
+	initialNodeKeys := make([]string, 0)
+
+	for _, node := range endingWithA {
+		cnt := 0
+		moveIndex := 0
+		initialNodeValue := node.value
+
+		for {
+			if node.value[2] == 'Z' {
+				break
+			}
+
+			move := moves[moveIndex]
+
+			if move == "L" {
+				node = node.left
+			} else {
+				node = node.right
+			}
+
+			cnt++
+			moveIndex = (moveIndex + 1) % len(moves)
+		}
+
+		stepsTillEndingZ[initialNodeValue] = cnt
+		initialNodeKeys = append(initialNodeKeys, initialNodeValue)
+	}
+
+	result := utils.Reduce(initialNodeKeys[1:], func(acc int, curr string) int {
+		return LCM(acc, stepsTillEndingZ[curr])
+	}, stepsTillEndingZ[initialNodeKeys[0]])
+
+	fmt.Println(result)
 }
 
 func main() {
